@@ -4,6 +4,9 @@ on:
   pull_request:
     branches: [master]
 
+permissions:
+  contents: read
+
 jobs:
   image-checks:
     runs-on: ubuntu-latest
@@ -16,26 +19,26 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y imagemagick jpegoptim optipng
 
       - name: Determine changed image files
-        id: changed
         run: |
-          git fetch origin "${{ github.base_ref }}" --depth=1
-          files=$(git diff --name-only --diff-filter=ACM "origin/${{ github.base_ref }}"...HEAD -- '*.jpg' '*.jpeg' '*.png' '*.webp' '*.JPG' '*.JPEG' '*.PNG' '*.WEBP')
-          echo "files<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$files" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
+          git fetch origin "$GITHUB_BASE_REF" --depth=1
+          git diff -z --name-only --diff-filter=ACM "origin/$GITHUB_BASE_REF...HEAD" -- '*.jpg' '*.jpeg' '*.png' '*.webp' '*.JPG' '*.JPEG' '*.PNG' '*.WEBP' > /tmp/changed-images
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
 
       - name: Check image sizes
-        if: steps.changed.outputs.files != ''
         run: |
           chmod +x scripts/check-image-sizes.sh
-          ./scripts/check-image-sizes.sh ${{ steps.changed.outputs.files }}
+          if [ -s /tmp/changed-images ]; then
+            xargs -0 -a /tmp/changed-images ./scripts/check-image-sizes.sh
+          fi
 
       - name: Check for duplicate images against existing assets
-        if: steps.changed.outputs.files != ''
         run: |
           chmod +x scripts/find-duplicate-images.sh
-          dupes=$(./scripts/find-duplicate-images.sh . | grep -c '^==' || true)
-          if [ "$dupes" -gt 0 ]; then
-            echo "Found $dupes duplicate image group(s) after this change. Run scripts/find-duplicate-images.sh . locally to see details."
-            exit 1
+          if [ -s /tmp/changed-images ]; then
+            dupes=$(./scripts/find-duplicate-images.sh . | grep -c '^==' || true)
+            if [ "$dupes" -gt 0 ]; then
+              echo "Found $dupes duplicate image group(s) after this change. Run scripts/find-duplicate-images.sh . locally to see details."
+              exit 1
+            fi
           fi

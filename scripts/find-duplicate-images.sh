@@ -8,7 +8,7 @@ trap 'rm -f "$tmpfile"' EXIT
 
 find "$root" \( -path '*/.git' -o -path '*/node_modules' \) -prune -o \
   -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' -o -iname '*.gif' \) -print0 |
-  xargs -0 md5sum > "$tmpfile"
+  xargs -0r md5sum > "$tmpfile"
 
 sort "$tmpfile" | awk '{print $1}' | uniq -d | while read -r h; do
   echo "== $h =="
