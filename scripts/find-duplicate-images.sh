@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# find-duplicate-images.sh — report byte-identical images under a directory.
+# find-duplicate-images.sh: report byte-identical images under a directory.
 set -euo pipefail
 
 root="${1:-.}"

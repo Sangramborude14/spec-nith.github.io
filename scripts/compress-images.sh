@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# compress-images.sh — resize-cap and recompress images in place.
+# compress-images.sh: resize-cap and recompress images in place.
 set -euo pipefail
 
 MAX_EDGE=2200

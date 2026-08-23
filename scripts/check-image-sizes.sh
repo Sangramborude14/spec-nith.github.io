@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# check-image-sizes.sh — fail if any given image exceeds the size/dimension budget.
+# check-image-sizes.sh: fail if any given image exceeds the size/dimension budget.
 set -euo pipefail
 
 MAX_BYTES=$((800 * 1024))
