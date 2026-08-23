@@ -25,10 +25,7 @@ process_one() {
     jpg|jpeg) jpegoptim --max="$JPEG_QUALITY" --strip-all -q "$f" ;;
     png) optipng -o2 -quiet "$f" ;;
     webp)
-      local tmp
-      tmp="$(mktemp --suffix=.webp)"
-      cwebp -q "$WEBP_QUALITY" "$f" -o "$tmp" -quiet
-      mv "$tmp" "$f"
+      convert "$f" -quality "$WEBP_QUALITY" "$f"
       ;;
   esac
 
