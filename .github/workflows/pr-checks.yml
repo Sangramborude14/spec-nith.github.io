@@ -1,0 +1,41 @@
+name: PR checks
+
+on:
+  pull_request:
+    branches: [master]
+
+jobs:
+  image-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install image tools
+        run: sudo apt-get update && sudo apt-get install -y imagemagick jpegoptim optipng
+
+      - name: Determine changed image files
+        id: changed
+        run: |
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          files=$(git diff --name-only --diff-filter=ACM "origin/${{ github.base_ref }}"...HEAD -- '*.jpg' '*.jpeg' '*.png' '*.webp' '*.JPG' '*.JPEG' '*.PNG' '*.WEBP')
+          echo "files<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$files" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Check image sizes
+        if: steps.changed.outputs.files != ''
+        run: |
+          chmod +x scripts/check-image-sizes.sh
+          ./scripts/check-image-sizes.sh ${{ steps.changed.outputs.files }}
+
+      - name: Check for duplicate images against existing assets
+        if: steps.changed.outputs.files != ''
+        run: |
+          chmod +x scripts/find-duplicate-images.sh
+          dupes=$(./scripts/find-duplicate-images.sh . | grep -c '^==' || true)
+          if [ "$dupes" -gt 0 ]; then
+            echo "Found $dupes duplicate image group(s) after this change. Run scripts/find-duplicate-images.sh . locally to see details."
+            exit 1
+          fi

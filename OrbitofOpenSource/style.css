@@ -22,7 +22,7 @@ section{
     left: -10%;
     width: 120%;
     height: 100vh;
-    background: url('images/../assets/images/gallery-shared/../assets/images/gallery-shared/../assets/images/gallery-shared/../assets/images/gallery-shared/bg.jpg');
+    background: url(../assets/images/gallery-shared/bg.jpg);
 } 
 
 .container #scene .layer

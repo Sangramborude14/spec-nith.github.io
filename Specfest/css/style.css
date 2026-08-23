@@ -1022,7 +1022,7 @@ button {
     background-repeat: no-repeat;
 }
 .cevery_white {background: #fff;}
-.cevery_bg {background: url(../images/ever_../../assets/images/gallery-shared/../../assets/images/gallery-shared/../../assets/images/gallery-shared/../../assets/images/gallery-shared/bg.jpg);
+.cevery_bg {background: url(../../assets/images/gallery-shared/bg.jpg);
 background-size: cover;
 background-repeat: no-repeat; background-position: center;
 padding: 80px 0;
