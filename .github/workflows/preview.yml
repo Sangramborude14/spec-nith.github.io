@@ -1,19 +1,73 @@
 name: Preview deploy
 
+# Runs in the BASE repo's context (pull_request_target), so it has the
+# Cloudflare secrets even for fork PRs. That is powerful and risky: a fork PR
+# can only be deployed after a write-access maintainer adds the
+# `deploy-preview` label, and the label is stripped again on every new push so
+# fresh commits must be re-reviewed. Checkout is pinned to the reviewed commit.
+#
+# Before labeling a fork PR, read the diff — including wrangler.jsonc. A
+# malicious `build.command` there would run with the secrets in scope.
+
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, labeled]
+  pull_request_target:
+    types: [labeled, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
-  deploy-preview:
-    if: contains(github.event.pull_request.labels.*.name, 'deploy-preview')
+  # New commits invalidate a prior review: drop the label so a maintainer must
+  # re-add it after looking at the new code. Closes the label/push race.
+  strip-label-on-sync:
+    if: github.event.action == 'synchronize'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                name: 'deploy-preview',
+              });
+            } catch (e) {
+              if (e.status !== 404) throw e; // 404 = label wasn't set
+            }
+
+  # Deploys only at the moment the label is added. `environment: preview` adds
+  # an optional Approve gate if you configure required reviewers on it.
+  deploy-preview:
+    if: github.event.action == 'labeled' && github.event.label.name == 'deploy-preview'
+    runs-on: ubuntu-latest
+    environment: preview
+    steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Deploy preview to Cloudflare
+        id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "4.125.0"
           command: versions upload
+      - name: Comment preview URL
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const url = '${{ steps.deploy.outputs.deployment-url }}';
+            const body = url
+              ? `Preview deployed: ${url}`
+              : `Preview deploy ran — see the Action log for the version preview URL.`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body,
+            });
