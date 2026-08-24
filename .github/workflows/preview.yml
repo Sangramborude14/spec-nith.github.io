@@ -2,12 +2,12 @@ name: Preview deploy
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, labeled]
 
 jobs:
   deploy-preview:
+    if: contains(github.event.pull_request.labels.*.name, 'deploy-preview')
     runs-on: ubuntu-latest
-    environment: preview
     steps:
       - uses: actions/checkout@v4
       - name: Deploy preview to Cloudflare
@@ -15,4 +15,5 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.125.0"
           command: versions upload
