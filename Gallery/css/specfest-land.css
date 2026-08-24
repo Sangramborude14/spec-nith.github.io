@@ -101,7 +101,7 @@ body {
   background-position: center;
 }
 .card:nth-child(6):before {
-  background-image: url(../assets/overlay.png), url(../../assets/images/gallery-shared/9.jpg);
+  background-image: url(../assets/overlay.png), url(../assets/sp29.jpg);
   background-position: center;
 }
 .card:nth-child(7):before {
