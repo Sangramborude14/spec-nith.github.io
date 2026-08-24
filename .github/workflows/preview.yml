@@ -48,6 +48,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+          # Fork code runs with base secrets — safe only because the label gate
+          # means a maintainer reviewed this exact sha (incl. wrangler.jsonc) first.
+          allow-unsafe-pr-checkout: true
       - name: Deploy preview to Cloudflare
         id: deploy
         uses: cloudflare/wrangler-action@v3
