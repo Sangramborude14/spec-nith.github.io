@@ -93,11 +93,11 @@ body {
   background-position: center;
 }
 .card:nth-child(4):before {
-  background-image: url(../assets/overlay.png), url(../assets/sp19.jpg);
+  background-image: url(../assets/overlay.png), url(../../assets/images/gallery-shared/9.jpg);
   background-position: center;
 }
 .card:nth-child(5):before {
-  background-image: url(../assets/overlay.png), url(../assets/sp23.jpg);
+  background-image: url(../assets/overlay.png), url(../assets/s9.jpg);
   background-position: center;
 }
 .card:nth-child(6):before {
@@ -105,7 +105,7 @@ body {
   background-position: center;
 }
 .card:nth-child(7):before {
-  background-image: url(../assets/overlay.png), url(../assets/sp2.jpg);
+  background-image: url(../assets/overlay.png), url(../sf/images/sp2.jpg);
   background-position: center;
 }
 
